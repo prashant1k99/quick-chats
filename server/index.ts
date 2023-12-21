@@ -1,11 +1,10 @@
 import express from "express"
+import path from "path"
 
 const app = express()
 const PORT = process.env.PORT || 8080
 
-app.get("/", (req, res) => {
-	res.json({ message: "Hello World" })
-})
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.get("/api", (req, res) => {
 	res.json({ message: "Checking" })
