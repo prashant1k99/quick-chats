@@ -6,6 +6,9 @@
   import { readSocket } from "../store/socketHandler"
 	import ConnectionReject from "./connectionReject.svelte"
 	import SetName from "./setName.svelte"
+	import Loader from "./loader.svelte"
+
+  let loadingMessage = 'Awaiting Confirmation...'
 
   let conversationId = ''
 
@@ -65,27 +68,29 @@
   })
 
   const handleAccept = (e: CustomEvent) => {
-    console.log('handleAccept', e)
     if (e.detail) {
       currentState = 'connected'
     } else {
       currentState = 'idle'
     }
   }
+
+  const connectionAccept = (e: CustomEvent) => {
+    // currentState = 'connected'
+    loadingMessage = 'Setting connection...'
+    currentState = 'connecting'
+  }
 </script>
 
-<ConnectionRequest />
+<ConnectionRequest on:connectionAccept={connectionAccept}/>
 <ConnectionReject on:accepted={handleAccept} />
 <SetName />
 {#if currentState === 'idle'}
-  <div class="flex h-full w-full justify-center items-center">
-    <ShareProfile myId={readSocket.id} />
-  </div>
+  <ShareProfile myId={readSocket.id} />
 {:else if currentState === 'connecting'}
-  <div class="flex flex-col h-full w-full justify-center items-center">
-    <span class="loading loading-dots loading-lg"></span>
-    Connecting...
-  </div>
+  <Loader {loadingMessage} on:connectionComplete={() => {
+    currentState = 'connected'
+  }}/>
 {:else if currentState === 'connected'}
   <ChatBox />
 {/if}

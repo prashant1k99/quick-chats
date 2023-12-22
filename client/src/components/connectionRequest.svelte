@@ -1,5 +1,8 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
+
+  const dispatch = createEventDispatcher();
 
   let requesterName: string = "";
   let requesterId: string = "";
@@ -17,7 +20,11 @@
   }
 
   const handleConnectionAccept = (e) => {
-    console.log('Accept');
+    readSocket.emit('ResponseConnection', {
+      id: requesterId,
+      status: 'Accepted'
+    })
+    dispatch('connectionAccept', true);
     closeDialog(e);
   }
   
