@@ -21,7 +21,7 @@ export const generateKeyPairs = async () => {
   return { publicKeyJwk, privateKeyJwk };
 };
 
-export const generateSharedSecret = async (publicKeyJwk: JsonWebKey, privateKeyJwk: JsonWebKey) => {
+export const generateSharedSecretKey = async (publicKeyJwk: JsonWebKey, privateKeyJwk: JsonWebKey) => {
   try {
     const publicKey = await window.crypto.subtle.importKey(
       "jwk",
