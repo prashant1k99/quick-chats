@@ -13,6 +13,7 @@ export type RequestConnection = {
   method: 'RequestConnection',
   data: {
     id: string,
+    conversationId: string,
     name: string
   }
 }

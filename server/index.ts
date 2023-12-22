@@ -15,8 +15,23 @@ const io = require("socket.io")({
 });
 
 io.on("connection", (socket: any) => {
-	console.log("New User Connected: ", socket.id)
+	// console.log("New User Connected: ", socket.id)
 	socket.emit("me", socket.id)
+
+	socket.on('ping', () => {
+		socket.emit('pong')
+	})
+
+	socket.on('RequestConnection', ({ name, conversationId }: any) => {
+		console.log("RequestConnection: ", name, conversationId)
+		// socket.broadcast.emit('RequestConnection', { name, id })
+		socket.to(conversationId).emit('RequestConnection', { name, id: socket.id })
+	})
+
+	socket.on('ResponseConnection', ({ id, status }: any) => {
+		console.log("ResponseConnection: ", id, status)
+		socket.to(id).emit('ResponseConnection', { status })
+	})
 })
 
 const server = app.listen(PORT, () => console.log("server is running on port ", PORT))

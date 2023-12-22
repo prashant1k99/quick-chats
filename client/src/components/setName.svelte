@@ -1,8 +1,7 @@
 <script lang="ts">
   let myName = ''
 
-  const setName = (e: Event) => {
-    e.preventDefault()
+  const setName = () => {
     localStorage.setItem('name', myName)
     const dialog = document.getElementById('showAddName') as HTMLDialogElement
     dialog.close()
@@ -12,7 +11,7 @@
 <dialog id="showAddName" class="modal modal-bottom sm:modal-middle">
   <div class="modal-box p-4">
     <div class="w-full h-full max-w-screen overflow-hidden p-4 sm:pt-8">
-      <form on:submit={setName} class="flex flex-col gap-4">
+      <form on:submit|preventDefault={setName} class="flex flex-col gap-4">
         <label class="form-control w-full">
           <div class="label">
             <span class="label-text">Enter Your Name</span>

@@ -2,10 +2,11 @@
   import { readSocket } from "../store/socketHandler";
 
   let requesterName: string = "";
+  let requesterId: string = "";
 
   readSocket.on("RequestConnection" , (data) => {
-    data = JSON.parse(data);
     requesterName = data.name;
+    requesterId = data.id;
     const dialog = document.getElementById('connectionRequest') as HTMLDialogElement;
     dialog?.showModal();
   })
@@ -21,7 +22,10 @@
   }
   
   const handleConnectionReject = (e) => {
-    console.log('Reject');
+    readSocket.emit('ResponseConnection', {
+      id: requesterId,
+      status: 'Rejected'
+    })
     closeDialog(e);
   }
 </script>

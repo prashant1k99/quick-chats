@@ -9,7 +9,7 @@
   let copyText = 'Click to Copy'
 
   const url = new URL(window.location.href);
-  url.searchParams.set('conversationId', myId);
+  url.searchParams.set('cId', myId);
   const shareURL = url.href;
 
   const mobileShareable = navigator.share as unknown as boolean ? true : false
@@ -30,15 +30,35 @@
     }
   }
 
+  // const copyShareLink = () => {
+    
+  //   navigator.clipboard.writeText(shareURL)
+  //   isTextCopied = true
+  //   copyText = 'Copied'
+  //   toggleTooltip()
+  //   setTimeout(() => {
+  //     isTextCopied = false
+  //     copyText = 'Click to Copy'
+  //   }, 1000);
+  // }
   const copyShareLink = () => {
-    navigator.clipboard.writeText(shareURL)
-    isTextCopied = true
-    copyText = 'Copied'
-    toggleTooltip()
-    setTimeout(() => {
-      isTextCopied = false
-      copyText = 'Click to Copy'
-    }, 1000);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareURL)
+        .then(() => {
+          isTextCopied = true;
+          copyText = 'Copied';
+          toggleTooltip();
+          setTimeout(() => {
+            isTextCopied = false;
+            copyText = 'Click to Copy';
+          }, 1000);
+        })
+        .catch(err => {
+          console.error('Could not copy text: ', err);
+        });
+    } else {
+      console.log('Clipboard API not available');
+    }
   }
   
   const shareLink = () => {
@@ -69,7 +89,10 @@
         </div>
         <p class="text-2xl font-normal text-primary">Or share this link</p>
         <div class="flex border border-slate-800 bg-neutral max-w-full px-8 py-2 rounded-lg w-full items-center">
-          <input disabled class="text-accent w-full text-xl bg-inherit rounded-lg text-ellipsis overflow-hidden mr-2" value={shareURL} />
+          <input disabled class="text-accent w-full text-xl bg-inherit rounded-lg text-ellipsis overflow-hidden mr-2" on:click={(e) => {
+            e.stopPropagation()
+            copyShareLink()
+          }} value={shareURL} />
           <div class="tooltip" data-tip={copyText}>
             <button type="button" on:click={shareLink}>
               {#if mobileShareable}
