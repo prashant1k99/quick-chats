@@ -2,11 +2,16 @@ import io from "socket.io-client";
 import { readable } from "svelte/store";
 
 export default class SocketHandler {
+  private socket
   constructor(){
-    const socket = io({
+    this.socket = io({
       transports: ['websocket'],
       path: '/socket'
     })
+  }
+
+  get Socket() {
+    return this.socket
   }
 }
 
