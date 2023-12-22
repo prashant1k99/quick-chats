@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
-	import type { Socket } from "socket.io-client"
 	import ShareProfile from "./shareProfile.svelte"
 	import ChatBox from "./chatBox.svelte"
+	import ConnectionRequest from "./connectionRequest.svelte"
+  import { readSocket } from "../store/socketHandler"
 
   export let conversationId = ''
   export let myId = ''
-  export let socket: Socket
 
-  let currentState: 'idle' | 'connecting' | 'connected' = 'connected'
+  let currentState: 'idle' | 'connecting' | 'connected' = 'idle'
 
   const checkForConversationId = () => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -21,14 +21,14 @@
 
   const startConversationWithId = () => {
     currentState = 'connecting'
-    socket.emit('init-conversation', { 
+    readSocket.emit('init-conversation', { 
       conversationId,
       myId,
       muName: localStorage.getItem('name')
     })
   }
 
-  socket.on('init-conversation-success', (responseId) => {
+  readSocket.on('init-conversation-success', (responseId) => {
     if (responseId === conversationId) {
       currentState = 'connected'
     }
@@ -42,6 +42,7 @@
   })
 </script>
 
+<ConnectionRequest />
 {#if currentState === 'idle'}
   <div class="flex h-full w-full justify-center items-center">
     <ShareProfile {myId} />

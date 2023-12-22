@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client"
-import { readable } from "svelte/store";
+import { readable, get } from "svelte/store";
 
 export default class SocketHandler {
   private socket?: Socket
@@ -9,11 +9,14 @@ export default class SocketHandler {
       transports: ['websocket'],
       path: '/socket'
     })
+    this.socket.connect()
   }
 
-  get Socket() {
-    return this.socket
+  get Socket(): Socket {
+    return this.socket as Socket
   }
 }
 
 export const socket = readable(new SocketHandler())
+
+export const readSocket = get(socket).Socket

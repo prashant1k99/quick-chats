@@ -1,18 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import io from "socket.io-client";
   import Navbar from "./components/navbar.svelte";
-  import { crypticKeys } from "./store/keys";
 	import SetName from "./components/setName.svelte"
 	import StartConversation from "./components/startConversation.svelte"
-  
-  const socket = io({
-    transports: ['websocket'],
-    path: '/socket'
-  })
+  import { readSocket } from "./store/socketHandler";
 
   let myId = ""
-  let myCrypticKeys = {}
   let conversationId = ""
 
   const showModal = () => {
@@ -26,21 +19,13 @@
     }
   }
 
+  readSocket.on("connect", async () => {
+    myId = readSocket.id;
+    console.log('myId', myId);
+  });
+
   onMount(() => {
     showModal();
-    socket.on("connection-success", (data) => {
-      console.log('Success', data);
-    })
-    socket.on("connect", async () => {
-      myId = socket.id;
-      const { publicKey, privateKey } = await crypticKeys()
-      myCrypticKeys = { publicKey, privateKey }
-      console.log('publicKey', publicKey);
-    });
-    socket.on("disconnect", () => {
-      myId = "";
-      console.log("Disconnected");
-    });
   });
 </script>
 
@@ -50,7 +35,7 @@
     <div class="h-full max-h-[90dvh] sm:max-h-[85dvh] w-full rounded-none sm:rounded-2xl flex flex-col bg-base-300">
       <SetName />
       {#if myId}
-        <StartConversation {conversationId} {myId} {socket}/>
+        <StartConversation {conversationId} {myId} />
       {/if}
     </div>
   </main>
