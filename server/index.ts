@@ -1,6 +1,7 @@
 import express from "express"
 import path from "path"
 
+import { RequestMethods } from '../types/socketRequest'
 const app = express()
 const PORT = process.env.PORT || 8080
 
@@ -22,10 +23,10 @@ io.on("connection", (socket: any) => {
 		socket.emit('pong')
 	})
 
-	socket.on('RequestConnection', ({ name, conversationId }: any) => {
+	socket.on(RequestMethods.RequestConnection, ({ name, conversationId }: any) => {
 		console.log("RequestConnection: ", name, conversationId)
-		// socket.broadcast.emit('RequestConnection', { name, id })
-		socket.to(conversationId).emit('RequestConnection', { name, id: socket.id })
+		// socket.broadcast.emit(RequestMethods.RequestConnection, { name, id })
+		socket.to(conversationId).emit(RequestMethods.RequestConnection, { name, id: socket.id })
 	})
 
 	socket.on('ResponseConnection', ({ id, status }: any) => {

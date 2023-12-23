@@ -12,51 +12,50 @@ export enum ResponseMethods {
   ResponseCandidate = 'ResponseCandidate'
 }
 
+type CommonData = {
+  id: string,
+  name: string,
+  status: 'Accepted' | 'Rejected',
+  offer: RTCSessionDescriptionInit,
+  answer: RTCSessionDescriptionInit,
+  candidate: RTCIceCandidateInit
+}
+
 export type Request = {
   method: Omit<RequestMethods, 'RequestConnection'>,
-  data: {
-    id: string
-  }
+  data: Pick<CommonData, 'id'>
 }
+
+export type RequestConnectionPayload = Pick<CommonData, 'id' | 'name'>
 
 export type RequestConnection = {
   method: 'RequestConnection',
-  data: {
-    id: string,
-    conversationId: string,
-    name: string
-  }
+  data: RequestConnectionPayload
 }
+
+export type ResponseConnectionPayload = Pick<CommonData, 'id' | 'status'>
 
 export type ResponseConnection = {
   method: 'ResponseConnection',
-  data: {
-    id: string,
-    name: string,
-    status: 'Accepted' | 'Rejected'
-  }
+  data: ResponseConnectionPayload
 }
+
+export type ResponseOfferPayload = Pick<CommonData, 'id' | 'offer'>
 
 export type ResponseOffer = {
   method: 'ResponseOffer',
-  data: {
-    id: string,
-    offer: RTCSessionDescriptionInit,
-  }
+  data: ResponseOfferPayload
 }
+
+export type ResponseAnswerPayload = Pick<CommonData, 'id' | 'answer'>
 
 export type ResponseAnswer = {
   method: 'ResponseAnswer',
-  data: {
-    id: string,
-    answer: RTCSessionDescriptionInit,
-  }
+  data: ResponseAnswerPayload
 }
 
+export type ResponseCandidatePayload = Pick<CommonData, 'id' | 'candidate'>
 export type ResponseCandidate = {
   method: 'ResponseCandidate',
-  data: {
-    id: string,
-    candidate: RTCIceCandidateInit,
-  }
+  data: ResponseCandidatePayload
 }

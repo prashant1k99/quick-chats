@@ -7,7 +7,7 @@
 	import ConnectionReject from "./connectionReject.svelte"
 	import SetName from "./setName.svelte"
 	import Loader from "./loader.svelte"
-	import { RequestMethods } from "../types/socketRequest"
+	import { RequestMethods } from "../../../types/socketRequest"
 
   let loadingMessage = 'Awaiting Confirmation...'
 

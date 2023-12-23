@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { readSocket } from "../store/socketHandler"
-	import { ResponseMethods } from "../types/socketRequest"
+	import { ResponseMethods } from "../../../types/socketRequest"
 
   export let loadingMessage = 'Awaiting Confirmation...';
 
