@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { readSocket } from "../store/socketHandler"
+	import { ResponseMethods } from "../types/socketRequest"
 
   export let loadingMessage = 'Awaiting Confirmation...';
 
-  readSocket.on('ResponseConnection', (data) => {
+  readSocket.on(ResponseMethods.ResponseConnection, (data) => {
     console.log('ResponseConnection', data)
     if (data.status === 'Accepted') {
       loadingMessage = 'Connection Accepted!';

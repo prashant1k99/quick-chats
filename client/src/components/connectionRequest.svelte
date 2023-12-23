@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
+	import { ResponseMethods } from '../types/socketRequest'
 
   const dispatch = createEventDispatcher();
 
@@ -20,7 +21,7 @@
   }
 
   const handleConnectionAccept = (e) => {
-    readSocket.emit('ResponseConnection', {
+    readSocket.emit(ResponseMethods.ResponseConnection, {
       id: requesterId,
       status: 'Accepted'
     })
@@ -29,7 +30,7 @@
   }
   
   const handleConnectionReject = (e) => {
-    readSocket.emit('ResponseConnection', {
+    readSocket.emit(ResponseMethods.ResponseConnection, {
       id: requesterId,
       status: 'Rejected'
     })

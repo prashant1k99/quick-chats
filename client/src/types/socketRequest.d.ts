@@ -1,6 +1,16 @@
-export type RequestMethods = 'RequestConnection' | 'RequestOffer' | 'RequestAnswer' | 'RequestCandidate'
+export enum RequestMethods {
+  RequestConnection = 'RequestConnection',
+  RequestOffer = 'RequestOffer',
+  RequestAnswer = 'RequestAnswer',
+  RequestCandidate = 'RequestCandidate'
+}
 
-export type ResponseMethods = 'ResponseConnection' | 'ResponseOffer' | 'ResponseAnswer' | 'ResponseCandidate'
+export enum ResponseMethods {
+  ResponseConnection = 'ResponseConnection',
+  ResponseOffer = 'ResponseOffer',
+  ResponseAnswer = 'ResponseAnswer',
+  ResponseCandidate = 'ResponseCandidate'
+}
 
 export type Request = {
   method: Omit<RequestMethods, 'RequestConnection'>,

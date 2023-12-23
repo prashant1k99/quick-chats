@@ -7,6 +7,7 @@
 	import ConnectionReject from "./connectionReject.svelte"
 	import SetName from "./setName.svelte"
 	import Loader from "./loader.svelte"
+	import { RequestMethods } from "../types/socketRequest"
 
   let loadingMessage = 'Awaiting Confirmation...'
 
@@ -26,7 +27,7 @@
   const startConversationWithId = () => {
     currentState = 'connecting'
     console.log('Is connected: ', readSocket.connected)
-    readSocket.emit('RequestConnection', { 
+    readSocket.emit(RequestMethods.RequestConnection, { 
       conversationId,
       name: localStorage.getItem('name')
     })
