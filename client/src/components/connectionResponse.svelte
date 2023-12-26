@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
 	import { ResponseMethods, type ResponseConnectionPayload } from '../../../types/socketRequest'
-  import { addParticipant, requestOffer } from '../store/chats';
+  import { addParticipant, requestOffer } from '../store/participents';
 
   const dispatch = createEventDispatcher();
 
