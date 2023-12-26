@@ -8,7 +8,7 @@
 	import SetName from "./setName.svelte"
 	import Loader from "./loader.svelte"
 	import { RequestMethods } from "../../../types/socketRequest"
-  import { participants } from "../store/chats";
+  import { participants } from "../store/participents";
 
   let loadingMessage = 'Awaiting Confirmation...'
 
