@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
 	import { ResponseMethods } from '../../../types/socketRequest'
+  import { addParticipant } from '../store/chats';
 
   const dispatch = createEventDispatcher();
 
@@ -21,6 +22,10 @@
   }
 
   const handleConnectionAccept = (e) => {
+    addParticipant({
+      id: requesterId,
+      name: requesterName
+    })
     readSocket.emit(ResponseMethods.ResponseConnection, {
       id: requesterId,
       status: 'Accepted'

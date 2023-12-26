@@ -1,14 +1,18 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
-	import { ResponseMethods } from '../../../types/socketRequest'
+	import { ResponseMethods, type ResponseConnectionPayload } from '../../../types/socketRequest'
+  import { addParticipant, requestOffer } from '../store/chats';
 
   const dispatch = createEventDispatcher();
 
-  readSocket.on(ResponseMethods.ResponseConnection, (data) => {
-    console.log('ResponseConnection', data)
+  readSocket.on(ResponseMethods.ResponseConnection, (data: ResponseConnectionPayload) => {
     if (data.status === 'Accepted') {
-      dispatch('accepted', true)
+      addParticipant({
+        id: data.id,
+        name: data.name
+      })
+      requestOffer(data.id)
     } else {
       const dialog = document.getElementById('connectionRejection') as HTMLDialogElement
       dialog.showModal()

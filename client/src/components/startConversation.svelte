@@ -4,10 +4,11 @@
 	import ChatBox from "./chatBox.svelte"
 	import ConnectionRequest from "./connectionRequest.svelte"
   import { readSocket } from "../store/socketHandler"
-	import ConnectionReject from "./connectionReject.svelte"
+	import ConnectionResponse from "./connectionResponse.svelte"
 	import SetName from "./setName.svelte"
 	import Loader from "./loader.svelte"
 	import { RequestMethods } from "../../../types/socketRequest"
+  import { participants } from "../store/chats";
 
   let loadingMessage = 'Awaiting Confirmation...'
 
@@ -25,10 +26,11 @@
   }
 
   const startConversationWithId = () => {
+    console.log('cId', conversationId)
     currentState = 'connecting'
     console.log('Is connected: ', readSocket.connected)
     readSocket.emit(RequestMethods.RequestConnection, { 
-      conversationId,
+      id: conversationId,
       name: localStorage.getItem('name')
     })
   }
@@ -47,12 +49,6 @@
     }
   }
 
-  readSocket.on('init-conversation-success', (responseId) => {
-    if (responseId === conversationId) {
-      currentState = 'connected'
-    }
-  })
-
   const triggerConnectionRequest = () => {
     if (conversationId) {
       startConversationWithId()
@@ -68,14 +64,6 @@
     }
   })
 
-  const handleAccept = (e: CustomEvent) => {
-    if (e.detail) {
-      currentState = 'connected'
-    } else {
-      currentState = 'idle'
-    }
-  }
-
   const connectionAccept = (e: CustomEvent) => {
     // currentState = 'connected'
     loadingMessage = 'Setting connection...'
@@ -84,8 +72,13 @@
 </script>
 
 <ConnectionRequest on:connectionAccept={connectionAccept}/>
-<ConnectionReject on:accepted={handleAccept} />
+<ConnectionResponse />
 <SetName />
+<code>
+  <pre>
+    { JSON.stringify($participants, null)}
+  </pre>
+</code>
 {#if currentState === 'idle'}
   <ShareProfile myId={readSocket.id} />
 {:else if currentState === 'connecting'}
