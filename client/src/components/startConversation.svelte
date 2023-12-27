@@ -76,7 +76,9 @@
 <SetName />
 <code>
   <pre>
-    { JSON.stringify($participants, null, 2)}
+    { $participants.map((participant) => {
+      return participant.name
+    })}
   </pre>
 </code>
 {#if currentState === 'idle'}
