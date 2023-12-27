@@ -2,17 +2,17 @@
   import { createEventDispatcher } from 'svelte';
   import { readSocket } from "../store/socketHandler";
 	import { ResponseMethods, type ResponseConnectionPayload } from '../../../types/socketRequest'
-  import { addParticipant, requestOffer } from '../store/participents';
+  import { participants } from '../store/participents';
 
   const dispatch = createEventDispatcher();
 
   readSocket.on(ResponseMethods.ResponseConnection, (data: ResponseConnectionPayload) => {
     if (data.status === 'Accepted') {
-      addParticipant({
+      participants.addParticipant({
         id: data.id,
         name: data.name
       })
-      requestOffer(data.id)
+      participants.requestOffer(data.id)
     } else {
       const dialog = document.getElementById('connectionRejection') as HTMLDialogElement
       dialog.showModal()

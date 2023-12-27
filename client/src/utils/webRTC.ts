@@ -12,10 +12,19 @@ export default class HandleRTC {
 			],
 		})
 		this.peerConnection.onicecandidate = (event) => {
+			console.log('onicecandidate: ', event.candidate)
 			if (event.candidate) {
-				console.log('onicecandidate: ', event.candidate)
 				this.myIceCandidates.push(event.candidate)
 			}
+		}
+		this.peerConnection.onicecandidate = (event) => {
+			if (event.candidate) {
+				console.log('Got IceCandidate: ', event.candidate)
+			}
+		}
+
+		this.peerConnection.onicegatheringstatechange = (event) => {
+			console.log('ICE gathering state change: ', event)
 		}
 	}
 
@@ -40,7 +49,13 @@ export default class HandleRTC {
 	}
 
 	setRemoteDescription(description: RTCSessionDescription) {
+		console.log('setRemote Peer State: ', this.peerConnection.signalingState)
 		return this.peerConnection.setRemoteDescription(description)
+	}
+
+	setLocalDescription(description: RTCSessionDescription) {
+		console.log('setLocal Peer State: ', this.peerConnection.signalingState)
+		return this.peerConnection.setLocalDescription(description)
 	}
 
 	async addIceCandidate(candidate: RTCIceCandidate) {
@@ -61,6 +76,12 @@ export default class HandleRTC {
 
 	getMyIceCandidates() {
 		return this.myIceCandidates
+	}
+
+	async createDataChannel() {
+		const channel = this.peerConnection.createDataChannel('chat')
+		this.channel = channel
+		return channel
 	}
 
 	async sendChat(message: string) {

@@ -76,7 +76,7 @@
 <SetName />
 <code>
   <pre>
-    { JSON.stringify($participants, null)}
+    { JSON.stringify($participants, null, 2)}
   </pre>
 </code>
 {#if currentState === 'idle'}
