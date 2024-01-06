@@ -8,89 +8,29 @@ import {
 	type ResponseAnswerPayload,
 	type ResponseCandidatePayload,
 } from '../../../types/socketRequest'
+import HandleRTC from '../utils/webRTC'
 
-enum ParticipentState {
-	Created = 'Created',
-	RequestOffer = 'RequestOffer',
-	Offered = 'Offered',
-	RequestAnswer = 'RequestAnswer',
-	Answered = 'Answered',
-	RequestingIceCandidate = 'RequestingIceCandidate',
-	Connected = 'Connected',
-}
+type ParticipentState = 'connecting' | 'connected' | 'disconnected'
 type Participant = {
 	id: string
 	name: string
-	peerConnection: RTCPeerConnection
-	iceCandidates: RTCIceCandidate[]
+	peerConnection: HandleRTC
 	state: ParticipentState
-	dataChannel?: RTCDataChannel
 }
 
 function createParticpants() {
 	const { subscribe, update } = writable([] as Participant[])
 
 	const addParticipant = (
-		participant: Omit<
-			Participant,
-			'connected' | 'state' | 'peerConnection' | 'iceCandidates'
-		>
+		participant: Omit<Participant, 'state' | 'peerConnection'>
 	) => {
-		const peerConnection = new RTCPeerConnection()
-		peerConnection.onicecandidate = (event) => {
-			console.log('onicecandidate: ', event.candidate)
-			if (event.candidate) {
-				update((participants) => {
-					const index = participants.findIndex(
-						(participant) => participant.id === participant.id
-					)
-					participants[index].iceCandidates.push(
-						event.candidate as RTCIceCandidate
-					)
-					return participants
-				})
-			}
-		}
-		peerConnection.onicecandidateerror = (event) => {
-			console.log('onicecandidateerror: ', event)
-		}
-		peerConnection.ondatachannel = (event) => {
-			console.log('ondatachannel: ', event)
-			const dataChannel = event.channel
-			dataChannel.onopen = () => {
-				console.log('dataChannel.onopen')
-			}
-			dataChannel.onclose = () => {
-				console.log('dataChannel.onclose')
-			}
-			dataChannel.onmessage = (event) => {
-				console.log('dataChannel.onmessage: ', event)
-			}
-			update((participants) => {
-				const index = participants.findIndex(
-					(participant) => participant.id === participant.id
-				)
-				participants[index].dataChannel = dataChannel
-				return participants
-			})
-		}
-		peerConnection.oniceconnectionstatechange = () => {
-			console.log('ICE Connection State:', peerConnection.iceConnectionState)
-
-			if (peerConnection.iceConnectionState === 'connected') {
-				console.log('WebRTC connection is successful!')
-				// Perform any actions you need when the connection is successful
-			}
-		}
 		update((participants) => {
 			return [
 				...participants,
 				{
 					...participant,
-					connected: false,
-					peerConnection: peerConnection,
-					iceCandidates: [],
-					state: ParticipentState.Offered,
+					peerConnection: new HandleRTC(participant.id),
+					state: 'connecting',
 				},
 			]
 		})
@@ -114,23 +54,15 @@ function createParticpants() {
 		readSocket.emit(RequestMethods.RequestOffer, {
 			id,
 		} as RequestPayload)
-		updateParticipentState(id, ParticipentState.RequestOffer)
 	}
 
 	readSocket.on(RequestMethods.RequestOffer, async (params: RequestPayload) => {
 		const participant = get(participants).find(
 			(participant) => participant.id === params.id
 		)
-		console.log('RequestOffer: ', params.id)
 		if (!participant) return
-		const offer = await participant.peerConnection.createOffer({
-			offerToReceiveAudio: true,
-			offerToReceiveVideo: true,
-		})
-		console.log('Offer: ', offer)
-		await participant.peerConnection.setLocalDescription(offer)
+		const offer = await participant.peerConnection.createOffer()
 
-		updateParticipentState(params.id, ParticipentState.Offered)
 		readSocket.emit(ResponseMethods.ResponseOffer, {
 			id: params.id,
 			offer,
@@ -144,21 +76,10 @@ function createParticpants() {
 				(participant) => participant.id === params.id
 			)
 			if (!participant) return
-			console.log('Got Offer: ', params.id, params.offer)
 			await participant.peerConnection.setRemoteDescription(
 				new RTCSessionDescription(params.offer)
 			)
-			updateParticipentState(params.id, ParticipentState.Answered)
-			const answer = await participant.peerConnection.createAnswer({
-				offerToReceiveAudio: true,
-				offerToReceiveVideo: true,
-			})
-			console.log('Answer: ', answer)
-			await participant.peerConnection
-				.setLocalDescription(new RTCSessionDescription(answer))
-				.catch((err) => {
-					console.log('setLocalDescription error: ', err)
-				})
+			const answer = await participant.peerConnection.createAnswer()
 			readSocket.emit(ResponseMethods.ResponseAnswer, {
 				id: params.id,
 				answer,
@@ -173,16 +94,12 @@ function createParticpants() {
 				(participant) => participant.id === params.id
 			)
 			if (!participant) return
-			updateParticipentState(params.id, ParticipentState.Answered)
-			console.log('Got Answer: ', params.answer)
 			await participant.peerConnection.setRemoteDescription(
 				new RTCSessionDescription(params.answer)
 			)
-			console.log('RequestCandidate: ', params.id)
 			readSocket.emit(RequestMethods.RequestCandidate, {
 				id: params.id,
 			} as RequestPayload)
-			updateParticipentState(params.id, ParticipentState.RequestingIceCandidate)
 		}
 	)
 
@@ -190,22 +107,20 @@ function createParticpants() {
 		const participant = get(participants).find(
 			(participant) => participant.id === params.id
 		)
-		console.log('RequestedCandidateFrom: ', params.id)
 		if (!participant) return
-		const iceCandidates = participant.iceCandidates
-		console.log('My iceCandidates: ', iceCandidates)
+		const iceCandidates = participant.peerConnection.getMyIceCandidates
 		if (iceCandidates.length === 0) {
-			console.log('No ice candidates')
 			readSocket.emit(RequestMethods.RequestCandidate, {
 				id: params.id,
 			} as RequestPayload)
 			return
+		} else {
+			console.log('iceCandidates: ', iceCandidates)
 		}
 		readSocket.emit(ResponseMethods.ResponseCandidate, {
 			id: params.id,
 			candidate: iceCandidates[0],
 		} as ResponseCandidatePayload)
-		updateParticipentState(params.id, ParticipentState.Connected)
 	})
 
 	readSocket.on(
@@ -215,27 +130,10 @@ function createParticpants() {
 				(participant) => participant.id === params.id
 			)
 			if (!participant) return
-			console.log('GotCandidateFrom: ', params.id, params.candidate)
 
 			await participant.peerConnection.addIceCandidate(
 				new RTCIceCandidate(params.candidate)
 			)
-			updateParticipentState(params.id, ParticipentState.Connected)
-			const dataChannel = participant.peerConnection.createDataChannel('chat')
-
-			console.log('dataChannel: ', dataChannel)
-			update((participants) => {
-				const index = participants.findIndex(
-					(participant) => participant.id === params.id
-				)
-				participants[index].dataChannel = dataChannel
-				return participants
-			})
-
-			dataChannel.onopen = () => {
-				console.log('dataChannel.onopen')
-				dataChannel.send('Hello World!')
-			}
 		}
 	)
 
@@ -243,7 +141,9 @@ function createParticpants() {
 		subscribe,
 		addParticipant,
 		requestOffer,
+		updateParticipentState,
 	}
 }
 
 export const participants = createParticpants()
+export const readParticipants = get(participants)

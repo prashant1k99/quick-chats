@@ -10,11 +10,7 @@
 	import { RequestMethods } from "../../../types/socketRequest"
   import { participants } from "../store/participents";
 
-  let loadingMessage = 'Awaiting Confirmation...'
-
   let conversationId = ''
-
-  let currentState: 'idle' | 'connecting' | 'connected' = 'idle'
 
   const checkForConversationId = () => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -26,9 +22,6 @@
   }
 
   const startConversationWithId = () => {
-    console.log('cId', conversationId)
-    currentState = 'connecting'
-    console.log('Is connected: ', readSocket.connected)
     readSocket.emit(RequestMethods.RequestConnection, { 
       id: conversationId,
       name: localStorage.getItem('name')
@@ -63,30 +56,15 @@
       triggerConnectionRequest()
     }
   })
-
-  const connectionAccept = (e: CustomEvent) => {
-    // currentState = 'connected'
-    loadingMessage = 'Setting connection...'
-    currentState = 'connecting'
-  }
 </script>
 
-<ConnectionRequest on:connectionAccept={connectionAccept}/>
+<ConnectionRequest />
 <ConnectionResponse />
 <SetName />
-<code>
-  <pre>
-    { $participants.map((participant) => {
-      return participant.name
-    })}
-  </pre>
-</code>
-{#if currentState === 'idle'}
-  <ShareProfile myId={readSocket.id} />
-{:else if currentState === 'connecting'}
-  <Loader {loadingMessage} on:connectionComplete={() => {
-    currentState = 'connected'
-  }}/>
-{:else if currentState === 'connected'}
+{#if $participants.length > 0 && $participants[0].state == 'connected'}
   <ChatBox />
+{:else if $participants.length > 0 || conversationId != ''}
+  <Loader />
+{:else}
+  <ShareProfile myId={readSocket.id} />
 {/if}

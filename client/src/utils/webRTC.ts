@@ -1,9 +1,11 @@
+import { participants } from '../store/participents'
+
 export default class HandleRTC {
 	private peerConnection: RTCPeerConnection
 	private myIceCandidates: RTCIceCandidate[] = []
 	private channel?: RTCDataChannel
 
-	constructor() {
+	constructor(private userId: string) {
 		this.peerConnection = new RTCPeerConnection({
 			iceServers: [
 				{
@@ -12,20 +14,25 @@ export default class HandleRTC {
 			],
 		})
 		this.peerConnection.onicecandidate = (event) => {
-			console.log('onicecandidate: ', event.candidate)
 			if (event.candidate) {
 				this.myIceCandidates.push(event.candidate)
 			}
 		}
-		this.peerConnection.onicecandidate = (event) => {
-			if (event.candidate) {
-				console.log('Got IceCandidate: ', event.candidate)
+
+		this.peerConnection.ondatachannel = (event) => {
+			const channel = event.channel
+			channel.onopen = () => {
+				participants.updateParticipentState(this.userId, 'connected')
+			}
+			channel.onmessage = (event) => {
+				console.log('channel message: ', event.data)
+			}
+			channel.onclose = () => {
+				participants.updateParticipentState(this.userId, 'disconnected')
 			}
 		}
 
-		this.peerConnection.onicegatheringstatechange = (event) => {
-			console.log('ICE gathering state change: ', event)
-		}
+		this.channel = this.peerConnection.createDataChannel('chat')
 	}
 
 	get PeerConnection() {
@@ -33,7 +40,10 @@ export default class HandleRTC {
 	}
 
 	async createOffer() {
-		const offer = await this.peerConnection.createOffer()
+		const offer = await this.peerConnection.createOffer({
+			offerToReceiveAudio: true,
+			offerToReceiveVideo: true,
+		})
 		await this.peerConnection.setLocalDescription(
 			new RTCSessionDescription(offer)
 		)
@@ -41,7 +51,10 @@ export default class HandleRTC {
 	}
 
 	async createAnswer() {
-		const answer = await this.peerConnection.createAnswer()
+		const answer = await this.peerConnection.createAnswer({
+			offerToReceiveAudio: true,
+			offerToReceiveVideo: true,
+		})
 		await this.peerConnection.setLocalDescription(
 			new RTCSessionDescription(answer)
 		)
@@ -49,12 +62,10 @@ export default class HandleRTC {
 	}
 
 	setRemoteDescription(description: RTCSessionDescription) {
-		console.log('setRemote Peer State: ', this.peerConnection.signalingState)
 		return this.peerConnection.setRemoteDescription(description)
 	}
 
 	setLocalDescription(description: RTCSessionDescription) {
-		console.log('setLocal Peer State: ', this.peerConnection.signalingState)
 		return this.peerConnection.setLocalDescription(description)
 	}
 
@@ -74,14 +85,8 @@ export default class HandleRTC {
 			.forEach((track) => this.peerConnection.addTrack(track, stream))
 	}
 
-	getMyIceCandidates() {
+	get getMyIceCandidates() {
 		return this.myIceCandidates
-	}
-
-	async createDataChannel() {
-		const channel = this.peerConnection.createDataChannel('chat')
-		this.channel = channel
-		return channel
 	}
 
 	async sendChat(message: string) {
