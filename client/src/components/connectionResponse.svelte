@@ -3,11 +3,13 @@
   import { readSocket } from "../store/socketHandler";
 	import { ResponseMethods, type ResponseConnectionPayload } from '../../../types/socketRequest'
   import { participants } from '../store/participents';
+	import { chats } from '../store/chats'
 
   const dispatch = createEventDispatcher();
 
   readSocket.on(ResponseMethods.ResponseConnection, (data: ResponseConnectionPayload) => {
     if (data.status === 'Accepted') {
+      chats.initChat(data.id)
       participants.addParticipant({
         id: data.id,
         name: data.name

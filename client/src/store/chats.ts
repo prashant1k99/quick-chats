@@ -3,7 +3,7 @@ import { writable } from 'svelte/store'
 type UserChat = {
 	id: string
 	message: string
-	sender: string
+	recieved: boolean
 	timestamp: number
 }
 
@@ -12,20 +12,51 @@ type Chat = {
 	messages: UserChat[]
 }
 
-export const chats = writable([] as Chat[])
+const createChat = () => {
+	const { subscribe, update, set } = writable([] as Chat[])
 
-export const addChat = (id: string, chat: UserChat) => {
-	chats.update((chats) => {
-		const index = chats.findIndex((chat) => chat.id === id)
-		if (index === -1) {
-			return [...chats, { id, messages: [chat] }]
-		} else {
-			chats[index].messages.push(chat)
-			return chats
-		}
-	})
+	const initChat = (id: string) => {
+		update((chats) => {
+			const index = chats.findIndex((chat) => chat.id === id)
+			if (index === -1) {
+				return [...chats, { id, messages: [] }]
+			} else {
+				return chats
+			}
+		})
+	}
+
+	const addChat = (id: string, chat: UserChat) => {
+		update((chats) => {
+			const index = chats.findIndex((chat) => chat.id === id)
+			if (index === -1) {
+				return [...chats, { id, messages: [chat] }]
+			} else {
+				chats[index].messages.push(chat)
+				return chats
+			}
+		})
+	}
+
+	const clearChats = (id: string) => {
+		update((chats) => {
+			const index = chats.findIndex((chat) => chat.id === id)
+			if (index === -1) {
+				return chats
+			} else {
+				chats[index].messages = []
+				return chats
+			}
+		})
+	}
+
+	return {
+		subscribe,
+		initChat,
+		addChat,
+		clearChats,
+		set,
+	}
 }
 
-export const clearChats = () => {
-	chats.set([])
-}
+export const chats = createChat()

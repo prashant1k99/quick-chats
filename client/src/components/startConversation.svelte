@@ -62,7 +62,7 @@
 <ConnectionResponse />
 <SetName />
 {#if $participants.length > 0 && $participants[0].state == 'connected'}
-  <ChatBox />
+  <ChatBox participant={$participants[0]}/>
 {:else if $participants.length > 0 || conversationId != ''}
   <Loader />
 {:else}

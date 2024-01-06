@@ -11,7 +11,7 @@ import {
 import HandleRTC from '../utils/webRTC'
 
 type ParticipentState = 'connecting' | 'connected' | 'disconnected'
-type Participant = {
+export type Participant = {
 	id: string
 	name: string
 	peerConnection: HandleRTC

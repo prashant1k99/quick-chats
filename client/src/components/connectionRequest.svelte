@@ -3,6 +3,7 @@
   import { readSocket } from "../store/socketHandler";
 	import { ResponseMethods } from '../../../types/socketRequest'
   import { participants } from '../store/participents';
+	import { chats } from '../store/chats'
 
   const dispatch = createEventDispatcher();
 
@@ -26,6 +27,7 @@
       id: requesterId,
       name: requesterName
     })
+    chats.initChat(requesterId)
     readSocket.emit(ResponseMethods.ResponseConnection, {
       id: requesterId,
       name: localStorage.getItem('name'),

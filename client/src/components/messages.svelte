@@ -6,8 +6,8 @@
 </script>
 
 <div class={`chat ${isSent? 'chat-end': 'chat-start'}`}>
-  <div class="chat-header">
-    {name}
+  <div class="chat-header pb-2">
+    {isSent ? 'You' : name}
     <time class="text-xs opacity-50">
       {new Date(timeStamp).toLocaleTimeString()}
     </time>

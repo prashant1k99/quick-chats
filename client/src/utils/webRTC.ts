@@ -1,3 +1,4 @@
+import { chats } from '../store/chats'
 import { participants } from '../store/participents'
 
 export default class HandleRTC {
@@ -26,6 +27,12 @@ export default class HandleRTC {
 			}
 			channel.onmessage = (event) => {
 				console.log('channel message: ', event.data)
+				chats.addChat(this.userId, {
+					id: this.userId,
+					message: event.data,
+					recieved: true,
+					timestamp: Date.now(),
+				})
 			}
 			channel.onclose = () => {
 				participants.updateParticipentState(this.userId, 'disconnected')

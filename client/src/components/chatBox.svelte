@@ -1,30 +1,31 @@
 <script lang="ts">
+  import { chats } from '../store/chats'
+  import type { Participant } from '../store/participents'
   import Messages from "./messages.svelte";
+  export let participant: Participant;
   let message = '';
 
-  let messages = [
-    { message: 'Hello' },
-    { message: 'Hi' },
-    { message: 'How are you?' },
-    { message: 'I am fine' },
-    { message: 'How about you?' },
-  ]
-
-  $: renderableMessages = messages;
-
-  const sendMessage = (e: Event) => {
+  const sendMessage = async (e: Event) => {
     e.preventDefault();
-    messages.push({ message: message });
-    console.log(messages)
+    if (message == '') {
+      return
+    }
+    await participant.peerConnection.sendChat(message);
+    chats.addChat(participant.id, {
+      message,
+      recieved: false,
+      id: '1',
+      timestamp: Date.now()
+    });
     message = '';
   }
 </script>
 
 
 <div class="w-full overflow-y-auto grow p-2 flex flex-col justify-end">
-  {#each renderableMessages as { message: msg }, i}
-    <Messages message={msg} timeStamp={Date.now()} isSent={i % 2 === 0} name="John Doe" />
-  {/each}
+    {#each $chats[0].messages as { message: msg, recieved }, i}
+      <Messages message={msg} timeStamp={Date.now()} isSent={!recieved} name={participant.name} />
+    {/each}
 </div>
 <form on:submit|preventDefault={sendMessage} class=" flex gap-4 p-4 bg-neutral rounded-none sm:rounded-2xl sm:rounded-t-none" >
   <input class="w-full bg-inherit focus:outline-none text-primary" bind:value={message} type="text" placeholder="Enter your name" on:keydown={(e) => {
